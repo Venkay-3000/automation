@@ -1,0 +1,738 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Project Automation Flow</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --teal: #02C39A;
+    --purple: #7B5EA7;
+    --blue: #4FC3F7;
+    --green: #00BFA5;
+    --navy: #0A1628;
+    --card: #0F2040;
+    --border: rgba(79,195,247,0.2);
+    --text: #E8F4FD;
+    --muted: #6B8BAD;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Syne', sans-serif;
+    background: var(--navy);
+    color: var(--text);
+    overflow-x: hidden;
+    min-height: 100vh;
+  }
+
+  /* ── Header ── */
+  .header {
+    text-align: center;
+    padding: 60px 20px 40px;
+    position: relative;
+  }
+  .header::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse 60% 60% at 50% 0%, rgba(2,195,154,0.12) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .header-tag {
+    display: inline-block;
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 3px;
+    color: var(--teal);
+    background: rgba(2,195,154,0.1);
+    border: 1px solid rgba(2,195,154,0.3);
+    padding: 6px 16px;
+    border-radius: 20px;
+    margin-bottom: 20px;
+    animation: fadeDown 0.6s ease both;
+  }
+  .header h1 {
+    font-size: clamp(2rem, 5vw, 3.5rem);
+    font-weight: 800;
+    line-height: 1.1;
+    animation: fadeDown 0.6s 0.1s ease both;
+    background: linear-gradient(135deg, #fff 30%, var(--blue));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .header p {
+    margin-top: 12px;
+    color: var(--muted);
+    font-size: 1rem;
+    animation: fadeDown 0.6s 0.2s ease both;
+  }
+
+  /* ── Nav tabs ── */
+  .tabs {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    padding: 0 20px 40px;
+    flex-wrap: wrap;
+    animation: fadeDown 0.6s 0.3s ease both;
+  }
+  .tab {
+    font-family: 'Space Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 1px;
+    padding: 10px 24px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--muted);
+    cursor: pointer;
+    transition: all 0.25s;
+  }
+  .tab:hover { color: var(--text); border-color: var(--blue); }
+  .tab.active {
+    background: var(--teal);
+    border-color: var(--teal);
+    color: var(--navy);
+    font-weight: 700;
+  }
+
+  /* ── Panel ── */
+  .panel { display: none; padding: 0 20px 80px; max-width: 1300px; margin: 0 auto; }
+  .panel.active { display: block; animation: panelIn 0.5s ease; }
+  @keyframes panelIn { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:none; } }
+
+  /* ── Section title ── */
+  .section-title {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 36px;
+  }
+  .section-icon {
+    width: 44px; height: 44px;
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px;
+  }
+  .section-title h2 { font-size: 1.5rem; font-weight: 700; }
+  .section-title span { color: var(--muted); font-size: 0.85rem; margin-top: 2px; }
+
+  /* ── Flow chart styles ── */
+  .flow-container {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 40px 30px;
+    position: relative;
+    overflow: hidden;
+  }
+  .flow-container::before {
+    content: '';
+    position: absolute;
+    top: -1px; left: 40px; right: 40px; height: 2px;
+    background: linear-gradient(90deg, transparent, var(--teal), transparent);
+  }
+
+  /* Node base */
+  .node {
+    border-radius: 10px;
+    padding: 10px 18px;
+    font-size: 13px;
+    font-weight: 600;
+    text-align: center;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    white-space: nowrap;
+    cursor: default;
+    transition: transform 0.2s, box-shadow 0.2s;
+    position: relative;
+  }
+  .node:hover { transform: translateY(-2px); }
+
+  .node-app {
+    background: rgba(79,195,247,0.15);
+    border: 1.5px solid var(--blue);
+    color: var(--blue);
+    border-radius: 8px;
+  }
+  .node-role {
+    background: rgba(123,94,167,0.2);
+    border: 1.5px solid var(--purple);
+    color: #B39DDB;
+    border-radius: 0 0 30px 30px;
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+  }
+  .node-action {
+    background: rgba(2,195,154,0.15);
+    border: 1.5px solid var(--teal);
+    color: var(--teal);
+    border-radius: 24px;
+  }
+  .node-menu {
+    background: rgba(79,195,247,0.08);
+    border: 1.5px solid rgba(79,195,247,0.4);
+    color: var(--blue);
+    border-radius: 24px;
+    font-size: 12px;
+  }
+  .node-sub {
+    background: rgba(79,195,247,0.05);
+    border: 1.5px solid rgba(79,195,247,0.25);
+    color: #90CAF9;
+    border-radius: 24px;
+    font-size: 11px;
+    padding: 7px 14px;
+  }
+  .node-status {
+    background: rgba(2,195,154,0.08);
+    border: 1.5px solid rgba(2,195,154,0.35);
+    color: #80CBC4;
+    border-radius: 24px;
+    font-size: 11px;
+    padding: 7px 14px;
+  }
+
+  /* connector SVG line */
+  .connector { stroke: rgba(79,195,247,0.35); stroke-width: 1.5; fill: none; }
+  .connector-v { stroke: rgba(2,195,154,0.4); stroke-width: 1.5; fill: none; }
+
+  /* ── Animate in nodes ── */
+  .node { opacity: 0; animation: nodeIn 0.4s ease forwards; }
+  @keyframes nodeIn { from { opacity:0; transform:scale(0.85); } to { opacity:1; transform:scale(1); } }
+
+  /* stagger delays */
+  .d1  { animation-delay: 0.05s; }
+  .d2  { animation-delay: 0.12s; }
+  .d3  { animation-delay: 0.19s; }
+  .d4  { animation-delay: 0.26s; }
+  .d5  { animation-delay: 0.33s; }
+  .d6  { animation-delay: 0.40s; }
+  .d7  { animation-delay: 0.47s; }
+  .d8  { animation-delay: 0.54s; }
+  .d9  { animation-delay: 0.61s; }
+  .d10 { animation-delay: 0.68s; }
+  .d11 { animation-delay: 0.75s; }
+  .d12 { animation-delay: 0.82s; }
+  .d13 { animation-delay: 0.89s; }
+  .d14 { animation-delay: 0.96s; }
+  .d15 { animation-delay: 1.03s; }
+  .d16 { animation-delay: 1.10s; }
+  .d17 { animation-delay: 1.17s; }
+  .d18 { animation-delay: 1.24s; }
+  .d19 { animation-delay: 1.31s; }
+  .d20 { animation-delay: 1.38s; }
+  .d21 { animation-delay: 1.45s; }
+  .d22 { animation-delay: 1.52s; }
+  .d23 { animation-delay: 1.59s; }
+  .d24 { animation-delay: 1.66s; }
+  .d25 { animation-delay: 1.73s; }
+  .d26 { animation-delay: 1.80s; }
+  .d27 { animation-delay: 1.87s; }
+  .d28 { animation-delay: 1.94s; }
+  .d29 { animation-delay: 2.01s; }
+  .d30 { animation-delay: 2.08s; }
+
+  /* SVG line animation */
+  .flow-svg line, .flow-svg path {
+    stroke-dasharray: 400;
+    stroke-dashoffset: 400;
+    animation: drawLine 0.6s ease forwards;
+  }
+  @keyframes drawLine { to { stroke-dashoffset: 0; } }
+  .flow-svg { position: absolute; top: 0; left: 0; pointer-events: none; }
+
+  /* ── Layout helpers ── */
+  .row {
+    display: flex;
+    align-items: flex-start;
+    gap: 0;
+  }
+  .col {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0;
+  }
+
+  /* ── Super Admin Grid ── */
+  .sa-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 48px;
+  }
+
+  /* vertical flow */
+  .vflow {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .vflow .node { margin: 0; }
+  .vline {
+    width: 2px;
+    height: 28px;
+    background: linear-gradient(to bottom, rgba(79,195,247,0.5), rgba(2,195,154,0.5));
+    margin: 0 auto;
+    border-radius: 2px;
+    opacity: 0;
+    animation: fadeIn 0.3s ease forwards;
+  }
+
+  /* horizontal menu row */
+  .menu-row {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .hline {
+    width: 24px; height: 2px;
+    background: rgba(79,195,247,0.4);
+    flex-shrink: 0;
+    opacity: 0;
+    animation: fadeIn 0.3s ease forwards;
+  }
+
+  /* sub-items column */
+  .sub-col {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0;
+    margin-top: 8px;
+  }
+
+  /* section blocks */
+  .flow-block {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0;
+  }
+
+  /* menu + children */
+  .menu-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .menu-children {
+    display: flex;
+    gap: 12px;
+    margin-top: 0;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  /* wide layout row for menu bar */
+  .sa-menu-bar {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+  }
+  .sa-menu-items {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: flex-start;
+    width: 100%;
+    margin-top: 0;
+  }
+  .menu-item-col {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .menu-item-col .vline { height: 20px; }
+  .sub-stack {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0;
+  }
+  .sub-stack .vline { height: 16px; }
+
+  @keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
+  @keyframes fadeDown { from { opacity:0; transform:translateY(-10px); } to { opacity:1; transform:none; } }
+
+  /* ── Pulse on hover ── */
+  .node:hover::after {
+    content: '';
+    position: absolute;
+    inset: -4px;
+    border-radius: inherit;
+    border: 1.5px solid currentColor;
+    opacity: 0.3;
+    animation: ripple 0.6s ease-out;
+  }
+  @keyframes ripple {
+    from { transform: scale(1); opacity: 0.5; }
+    to   { transform: scale(1.15); opacity: 0; }
+  }
+
+  /* scrollbar */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: var(--navy); }
+  ::-webkit-scrollbar-thumb { background: rgba(79,195,247,0.3); border-radius: 3px; }
+
+  /* responsive */
+  @media (max-width: 700px) {
+    .sa-menu-items { gap: 6px; }
+    .node { font-size: 11px; padding: 8px 12px; }
+    .header h1 { font-size: 1.8rem; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-tag">PROJECT AUTOMATION SYSTEM</div>
+  <h1>Automation Flow Diagram</h1>
+  <p>Interactive system architecture · Click tabs to explore each panel</p>
+</div>
+
+<div class="tabs">
+  <button class="tab active" onclick="showPanel('admin')">⚙️ Super Admin</button>
+  <button class="tab" onclick="showPanel('nbfc')">🏦 NBFC Panel</button>
+  <button class="tab" onclick="showPanel('borrower')">👤 Borrower</button>
+</div>
+
+<!-- ══════════════════════════════════════
+     PANEL 1: SUPER ADMIN
+══════════════════════════════════════ -->
+<div class="panel active" id="panel-admin">
+  <div class="section-title">
+    <div class="section-icon" style="background:rgba(2,195,154,0.15);border:1px solid var(--teal);">⚙️</div>
+    <div>
+      <h2>Super Admin Panel</h2>
+      <span>Application Panel → Super Admin → Login → Dashboard Modules</span>
+    </div>
+  </div>
+
+  <div class="flow-container">
+    <!-- Entry flow -->
+    <div class="vflow" style="margin-bottom:32px;">
+      <div class="node node-app d1">Application Panel</div>
+      <div class="vline d2" style="animation-delay:0.18s"></div>
+      <div class="node node-role d3">Super Admin</div>
+      <div class="vline d4" style="animation-delay:0.34s"></div>
+      <div class="node node-action d5" style="background:rgba(2,195,154,0.2);border-color:var(--teal);color:var(--teal);">Login</div>
+      <div class="vline d6" style="animation-delay:0.50s"></div>
+    </div>
+
+    <!-- Menu bar -->
+    <div class="sa-menu-bar">
+      <div class="sa-menu-items">
+
+        <!-- Dashboard -->
+        <div class="menu-item-col">
+          <div class="node node-menu d7">Dashboard</div>
+          <div class="vline" style="animation-delay:0.6s"></div>
+          <div class="sub-stack">
+            <div class="node node-sub d14">Total Applications</div>
+            <div class="vline" style="animation-delay:1.0s"></div>
+            <div class="node node-sub d15">Active Users</div>
+            <div class="vline" style="animation-delay:1.08s"></div>
+            <div class="node node-sub d16">Approval Rate</div>
+          </div>
+        </div>
+        <div class="hline d7" style="animation-delay:0.6s"></div>
+
+        <!-- Users -->
+        <div class="menu-item-col">
+          <div class="node node-menu d8">Users</div>
+          <div class="vline" style="animation-delay:0.68s"></div>
+          <div class="sub-stack">
+            <div class="node node-sub d17">All</div>
+            <div class="vline" style="animation-delay:1.15s"></div>
+            <div class="node node-sub d18">Active</div>
+            <div class="vline" style="animation-delay:1.22s"></div>
+            <div class="node node-sub d19">Blocked</div>
+          </div>
+        </div>
+        <div class="hline d8" style="animation-delay:0.68s"></div>
+
+        <!-- Applications -->
+        <div class="menu-item-col">
+          <div class="node node-menu d9">Applications</div>
+          <div class="vline" style="animation-delay:0.76s"></div>
+          <div class="sub-stack">
+            <div class="node node-sub d20">All</div>
+            <div class="vline" style="animation-delay:1.3s"></div>
+            <div class="node node-sub d21">Pending</div>
+            <div class="vline" style="animation-delay:1.37s"></div>
+            <div class="node node-sub d22">Approved</div>
+            <div class="vline" style="animation-delay:1.44s"></div>
+            <div class="node node-sub d23">Rejected</div>
+          </div>
+        </div>
+        <div class="hline d9" style="animation-delay:0.76s"></div>
+
+        <!-- NBFC Partners -->
+        <div class="menu-item-col">
+          <div class="node node-menu d10">NBFC Partners</div>
+          <div class="vline" style="animation-delay:0.84s"></div>
+          <div class="sub-stack">
+            <div class="node node-sub d24">All</div>
+            <div class="vline" style="animation-delay:1.51s"></div>
+            <div class="node node-sub d25">Active</div>
+          </div>
+        </div>
+        <div class="hline d10" style="animation-delay:0.84s"></div>
+
+        <!-- Reports -->
+        <div class="menu-item-col">
+          <div class="node node-menu d11">Reports</div>
+        </div>
+        <div class="hline d11" style="animation-delay:0.92s"></div>
+
+        <!-- Setting -->
+        <div class="menu-item-col">
+          <div class="node node-menu d12">Setting</div>
+        </div>
+        <div class="hline d12" style="animation-delay:1.0s"></div>
+
+        <!-- Audit Logs -->
+        <div class="menu-item-col">
+          <div class="node node-menu d13">Audit Logs</div>
+        </div>
+        <div class="hline d13" style="animation-delay:1.08s"></div>
+
+        <!-- Support Tickets -->
+        <div class="menu-item-col">
+          <div class="node node-menu d14" style="animation-delay:1.15s">Support Tickets</div>
+          <div class="vline" style="animation-delay:1.2s"></div>
+          <div class="sub-stack">
+            <div class="node node-sub d26">All</div>
+            <div class="vline" style="animation-delay:1.73s"></div>
+            <div class="node node-sub d27">Open</div>
+            <div class="vline" style="animation-delay:1.80s"></div>
+            <div class="node node-sub d28">In Progress</div>
+            <div class="vline" style="animation-delay:1.87s"></div>
+            <div class="node node-sub d29">Received</div>
+            <div class="vline" style="animation-delay:1.94s"></div>
+            <div class="node node-sub d30">Closed</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     PANEL 2: NBFC
+══════════════════════════════════════ -->
+<div class="panel" id="panel-nbfc">
+  <div class="section-title">
+    <div class="section-icon" style="background:rgba(123,94,167,0.15);border:1px solid var(--purple);">🏦</div>
+    <div>
+      <h2>NBFC Panel</h2>
+      <span>NBFC's → Login → Dashboard → Module Navigation</span>
+    </div>
+  </div>
+
+  <div class="flow-container">
+    <div class="vflow" style="margin-bottom:32px;">
+      <div class="node node-role d1">NBFC's</div>
+      <div class="vline d2" style="animation-delay:0.12s"></div>
+      <div class="node node-action d3">Login</div>
+      <div class="vline d4" style="animation-delay:0.26s"></div>
+    </div>
+
+    <div class="sa-menu-bar">
+      <div class="sa-menu-items">
+
+        <!-- DashBoard -->
+        <div class="menu-item-col">
+          <div class="node node-menu d5">DashBoard</div>
+          <div class="vline" style="animation-delay:0.4s"></div>
+          <div class="sub-stack">
+            <div class="node node-sub d14">Total Application</div>
+            <div class="vline" style="animation-delay:1.0s"></div>
+            <div class="node node-sub d15">Active Loan</div>
+            <div class="vline" style="animation-delay:1.07s"></div>
+            <div class="node node-sub d16">Collection</div>
+          </div>
+        </div>
+        <div class="hline d5" style="animation-delay:0.4s"></div>
+
+        <!-- Application -->
+        <div class="menu-item-col">
+          <div class="node node-menu d6">Application</div>
+        </div>
+        <div class="hline d6" style="animation-delay:0.47s"></div>
+
+        <!-- Customers -->
+        <div class="menu-item-col">
+          <div class="node node-menu d7">Customers</div>
+        </div>
+        <div class="hline d7" style="animation-delay:0.54s"></div>
+
+        <!-- EMI Tracker -->
+        <div class="menu-item-col">
+          <div class="node node-menu d8">EMI Tracker</div>
+        </div>
+        <div class="hline d8" style="animation-delay:0.61s"></div>
+
+        <!-- Disbursement -->
+        <div class="menu-item-col">
+          <div class="node node-menu d9">Disbursement</div>
+        </div>
+        <div class="hline d9" style="animation-delay:0.68s"></div>
+
+        <!-- Reports -->
+        <div class="menu-item-col">
+          <div class="node node-menu d10">Reports</div>
+        </div>
+        <div class="hline d10" style="animation-delay:0.75s"></div>
+
+        <!-- Staff -->
+        <div class="menu-item-col">
+          <div class="node node-menu d11">Staff</div>
+        </div>
+        <div class="hline d11" style="animation-delay:0.82s"></div>
+
+        <!-- Setting -->
+        <div class="menu-item-col">
+          <div class="node node-menu d12">Setting</div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     PANEL 3: BORROWER
+══════════════════════════════════════ -->
+<div class="panel" id="panel-borrower">
+  <div class="section-title">
+    <div class="section-icon" style="background:rgba(79,195,247,0.15);border:1px solid var(--blue);">👤</div>
+    <div>
+      <h2>Borrower Panel</h2>
+      <span>Application Panel → Borrower → Register / Login → Features</span>
+    </div>
+  </div>
+
+  <div class="flow-container">
+    <!-- Entry -->
+    <div class="vflow" style="margin-bottom:28px;">
+      <div class="node node-app d1">Application Panel</div>
+      <div class="vline d2" style="animation-delay:0.12s"></div>
+      <div class="node node-role d3">Borrower</div>
+    </div>
+
+    <!-- Register + Login split -->
+    <div style="display:flex;justify-content:center;gap:40px;margin-bottom:28px;flex-wrap:wrap;">
+      <div class="vflow">
+        <div class="vline d4" style="animation-delay:0.3s"></div>
+        <div class="node node-menu d5">Register</div>
+      </div>
+      <div class="vflow">
+        <div class="vline d4" style="animation-delay:0.3s"></div>
+        <div class="node node-action d6">Login</div>
+      </div>
+    </div>
+
+    <!-- Dashboard -->
+    <div class="vflow" style="margin-bottom:28px;">
+      <div class="vline d7" style="animation-delay:0.54s"></div>
+      <div class="node node-menu d8">DashBoard</div>
+      <div class="vline d9" style="animation-delay:0.68s"></div>
+    </div>
+
+    <!-- Apply For Loan + siblings row -->
+    <div class="sa-menu-bar">
+      <div class="sa-menu-items">
+
+        <!-- Apply For Loan left side -->
+        <div class="menu-item-col">
+          <div class="node node-action d10" style="min-width:130px;">Apply For Loan</div>
+          <div class="vline" style="animation-delay:0.85s"></div>
+          <div class="sub-stack">
+            <div class="node node-sub d17">Loan Details</div>
+            <div class="vline" style="animation-delay:1.22s"></div>
+            <div class="node node-sub d18">Personal Info</div>
+            <div class="vline" style="animation-delay:1.3s"></div>
+            <div class="node node-sub d19">Employment</div>
+            <div class="vline" style="animation-delay:1.38s"></div>
+            <div class="node node-sub d20">Upload Documents</div>
+          </div>
+        </div>
+        <div class="hline d10" style="animation-delay:0.85s"></div>
+
+        <!-- Document -->
+        <div class="menu-item-col">
+          <div class="node node-menu d11">Document</div>
+          <div class="vline" style="animation-delay:0.92s"></div>
+          <div class="sub-stack">
+            <div class="node node-sub d21">View Document</div>
+            <div class="vline" style="animation-delay:1.5s"></div>
+            <div class="node node-sub d22">Edit Document</div>
+          </div>
+        </div>
+        <div class="hline d11" style="animation-delay:0.92s"></div>
+
+        <!-- My Loan -->
+        <div class="menu-item-col">
+          <div class="node node-menu d12">My Loan</div>
+          <div class="vline" style="animation-delay:1.0s"></div>
+          <div class="sub-stack">
+            <div class="node node-sub d23">View All Running Loan</div>
+          </div>
+        </div>
+        <div class="hline d12" style="animation-delay:1.0s"></div>
+
+        <!-- EMI Calendar -->
+        <div class="menu-item-col">
+          <div class="node node-menu d13">EMI Calendar</div>
+          <div class="vline" style="animation-delay:1.08s"></div>
+          <div class="sub-stack">
+            <div class="node node-sub d24">Show All EMI Based On Date</div>
+          </div>
+        </div>
+        <div class="hline d13" style="animation-delay:1.08s"></div>
+
+        <!-- Review -->
+        <div class="menu-item-col">
+          <div class="node node-menu d14">Review</div>
+        </div>
+        <div class="hline d14" style="animation-delay:1.15s"></div>
+
+        <!-- Notification -->
+        <div class="menu-item-col">
+          <div class="node node-menu d15">Notification</div>
+        </div>
+        <div class="hline d15" style="animation-delay:1.22s"></div>
+
+        <!-- Support -->
+        <div class="menu-item-col">
+          <div class="node node-menu d16">Support</div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function showPanel(id) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('panel-' + id).classList.add('active');
+  event.currentTarget.classList.add('active');
+}
+</script>
+</body>
+</html>
